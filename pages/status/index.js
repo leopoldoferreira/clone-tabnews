@@ -9,9 +9,8 @@ async function fetchAPI(key) {
 export default function StatusPage() {
   return (
     <>
-      <h1>Status</h1>
       <UpdatedAt />
-      <DatabaseData />
+      <DatabaseStatus />
     </>
   );
 }
@@ -27,23 +26,41 @@ function UpdatedAt() {
     updatedAtText = new Date(data.updated_at).toLocaleString("pt-BR");
   }
 
-  return <div>Última Atualização: {updatedAtText}</div>;
+  return (
+    <>
+      <h1>Status</h1>
+      <div>Última Atualização: {updatedAtText}</div>
+    </>
+  );
 }
 
-function DatabaseData() {
+function DatabaseStatus() {
   const { isLoading, data } = useSWR("/api/v1/status", fetchAPI, {
     refreshInterval: 2000,
   });
+  let databaseStatusText;
+
+  if (isLoading) {
+    databaseStatusText = "Carregando...";
+  }
 
   if (!isLoading && data) {
-    return (
-      <div>
-        Versão do Posgres: {data.dependencies.database.version}
-        <br />
-        Numero Máximo de Conexões: {data.dependencies.database.max_connections}
-        <br />
-        Conexões Abertas: {data.dependencies.database.opened_connections}
-      </div>
+    databaseStatusText = (
+      <>
+        <div> Versão: {data.dependencies.database.version}</div>
+        <div>
+          Conexões abertas: {data.dependencies.database.opened_connections}
+        </div>
+        <div>
+          Conexões máximas: {data.dependencies.database.max_connections}
+        </div>
+      </>
     );
   }
+  return (
+    <>
+      <h2>Database</h2>
+      <div>{databaseStatusText}</div>
+    </>
+  );
 }
